@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S/C & PI Workflow Tracker</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#0C1F3F;--gold:#C5973B;--goldt:#E8C97A;--bg:#F0EFE9;--border:#E2E0DA;--g200:#E8E7E2;--g400:#9C9B95;--g600:#5C5C58;--g800:#2C2C29}
+body{font-family:system-ui,sans-serif;background:var(--bg);min-height:100vh;color:var(--g800)}
+.topbar{background:var(--navy);position:sticky;top:0;z-index:100}
+.topbar-accent{height:3px;background:linear-gradient(90deg,var(--gold),var(--goldt),transparent)}
+.topbar-inner{display:flex;align-items:center;gap:10px;padding:10px 14px;flex-wrap:wrap}
+.brand-sub{font-size:8px;letter-spacing:2px;color:var(--goldt);text-transform:uppercase}
+.brand-title{font-size:13px;font-weight:700;color:#fff}
+.sep{width:1px;height:28px;background:rgba(255,255,255,.15);flex-shrink:0}
+.sc-row{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+select{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:12px;padding:4px 8px;border-radius:6px;cursor:pointer}
+select option{background:#163362}
+.btn{display:inline-flex;align-items:center;padding:5px 11px;border-radius:6px;border:none;font-size:11px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap}
+.btn-gold{background:var(--gold);color:#fff}.btn-gold:hover{background:#b8873a}
+.btn-red{background:rgba(220,50,50,.2);color:#fca5a5;border:1px solid rgba(220,50,50,.3)}
+.btn-gray{background:#f3f4f6;color:var(--g600)}
+.btn-green{background:rgba(52,211,153,.15);color:#059669;border:1px solid rgba(52,211,153,.3)}
+.user-tag{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:10px;padding:3px 9px;border-radius:20px;margin-left:auto;white-space:nowrap}
+.sync-badge{font-size:9px;padding:2px 7px;border-radius:20px}
+.sync-ok{background:rgba(52,211,153,.2);color:#34d399}
+.sync-err{background:rgba(248,113,113,.2);color:#f87171}
+.sync-wait{background:rgba(251,191,36,.2);color:#fbbf24}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:flex;align-items:center;justify-content:center}
+.overlay.hidden{display:none}
+.modal{background:#fff;border-radius:14px;padding:24px;width:290px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal h3{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.modal p{font-size:12px;color:var(--g400);margin-bottom:12px;line-height:1.6}
+.modal input{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px 11px;font-size:13px;outline:none;margin-bottom:10px}
+.modal input:focus{border-color:var(--gold)}
+.type-row,.mode-row{display:flex;gap:6px;margin-bottom:12px}
+.type-btn,.mode-btn{flex:1;padding:7px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;font-size:12px;font-weight:700;text-align:center;background:#fff;color:var(--g600);transition:.15s}
+.type-btn.active{border-color:#7c3aed;background:#7c3aed;color:#fff}
+.mode-btn.active{border-color:var(--navy);background:var(--navy);color:#fff}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end}
+.confirm-box{background:#fff;border-radius:14px;padding:24px;width:270px;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center}
+.confirm-box h3{font-size:14px;font-weight:700;color:#7f1d1d;margin-bottom:8px}
+.confirm-box p{font-size:12px;color:var(--g600);margin-bottom:16px;line-height:1.6}
+.confirm-actions{display:flex;gap:8px;justify-content:center}
+.prog-panel{background:#fff;border-bottom:1px solid var(--border);padding:12px 14px}
+.prog-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px}
+.prog-title{font-size:13px;font-weight:700;color:var(--navy)}
+.tags{display:flex;gap:5px}
+.tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.5px}
+.tag-sc{background:#ede9fe;color:#5b21b6}.tag-pi{background:#fce7f3;color:#9d174d}
+.tag-cif{background:#dbeafe;color:#1e40af}.tag-fob{background:#fef3c7;color:#92400e}
+.prog-stats{display:flex;gap:10px;font-size:11px;color:var(--g400);flex-wrap:wrap}
+.sdot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:3px}
+.bar-wrap{background:var(--g200);border-radius:20px;height:5px;overflow:hidden}
+.bar{height:100%;border-radius:20px;background:linear-gradient(90deg,#059669,#34d399);transition:width .4s}
+.content{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.phase-block{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.phase-hdr{padding:8px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.ph-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
+.ph-title{font-size:11.5px;font-weight:700;flex:1}
+.ph-prog{font-size:10px;font-weight:600;opacity:.7}
+.ph-chev{font-size:11px;opacity:.4;transition:.2s}
+.collapsed .ph-chev{transform:rotate(-90deg)}
+.collapsed .phase-steps{display:none}
+.step-row{border-top:1px solid var(--border)}
+.step-main{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;cursor:pointer}
+.step-main:hover{background:#fafaf8}
+.s-btn{width:22px;height:22px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:.15s;margin-top:1px;font-size:9px}
+.s-btn:hover{transform:scale(1.15)}
+.st-pending .s-btn{border-color:#d1d5db;background:#f3f4f6;color:transparent}
+.st-doing .s-btn{border-color:#f5ca6a;background:#fffbeb;color:#92600a}
+.st-done .s-btn{border-color:#6ee7b7;background:#ecfdf5;color:#065f46}
+.s-info{flex:1;min-width:0}
+.s-num{font-size:9px;font-weight:600;letter-spacing:.5px;opacity:.4;margin-bottom:1px}
+.s-title{font-size:12px;font-weight:500;line-height:1.4}
+.st-doing .s-title{color:#92600a}
+.st-done .s-title{color:#065f46;text-decoration:line-through;opacity:.7}
+.s-badge{display:inline-flex;font-size:9px;font-weight:500;padding:1px 7px;border-radius:20px;margin-top:3px}
+.st-pending .s-badge{background:#f3f4f6;color:#9ca3af;border:1px solid #e5e7eb}
+.st-doing .s-badge{background:#fffbeb;color:#92600a;border:1px solid #f5ca6a}
+.st-done .s-badge{background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7}
+.s-who{font-size:10px;color:var(--g400);margin-top:2px;font-style:italic}
+.s-chev{font-size:10px;opacity:.3;transition:.15s;flex-shrink:0;padding:3px;margin-top:3px}
+.expanded .s-chev{transform:rotate(180deg)}
+.step-detail{display:none;padding:8px 12px 12px 42px;background:#fafafa;border-top:1px solid var(--border)}
+.expanded .step-detail{display:block}
+.s-desc{font-size:11.5px;color:var(--g600);line-height:1.65;margin-bottom:8px}
+.det-lbl{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--g400);margin-bottom:4px}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.chip-d{font-size:10.5px;padding:2px 8px;background:#fff;border:1px solid var(--border);border-radius:20px;color:var(--g600)}
+.chip-c{font-size:10.5px;padding:2px 8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;color:#1e40af}
+.note-area{width:100%;margin-top:6px;border:1px solid var(--border);border-radius:7px;padding:6px 9px;font-size:11.5px;color:var(--g800);resize:vertical;min-height:48px;outline:none;background:#fff;transition:.15s;font-family:inherit}
+.note-area:focus{border-color:var(--gold)}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;color:var(--g400)}
+.empty-icon{font-size:40px;margin-bottom:10px;opacity:.5}
+.empty-title{font-size:14px;font-weight:600;color:var(--g600);margin-bottom:6px}
+.empty-sub{font-size:11.5px;line-height:1.7}
+.loading{text-align:center;padding:50px;color:var(--g400);font-size:13px}
+.spin{display:inline-block;width:22px;height:22px;border:2px solid var(--g200);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.footer{background:var(--navy);padding:8px 14px;margin-top:14px;display:flex;justify-content:space-between;align-items:center}
+.footer-txt{font-size:9px;color:rgba(255,255,255,.3)}
+.footer-r{font-size:9px;color:var(--goldt);opacity:.6}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1f2937;color:#fff;font-size:12px;padding:8px 18px;border-radius:30px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="nameOverlay">
+  <div class="modal" style="text-align:center">
+    <h3>สวัสดี! 👋</h3>
+    <p>ใส่ชื่อหรือชื่อย่อของคุณ<br>เพื่อให้ทีมรู้ว่าใครอัปเดต</p>
+    <input type="text" id="nameInput" placeholder="เช่น สมชาย, Ann, ทีมจัดซื้อ" maxlength="20" style="text-align:center">
+    <button class="btn btn-gold" id="saveNameBtn" style="width:100%;padding:9px;font-size:13px">เข้าใช้งาน</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="addOverlay">
+  <div class="modal">
+    <h3>เพิ่มรายการใหม่</h3>
+    <p>เลือกประเภทและกรอกเลขที่เอกสาร</p>
+    <div class="type-row">
+      <div class="type-btn active" id="typeSC" onclick="selectType('SC')">S/C</div>
+      <div class="type-btn" id="typePI" onclick="selectType('PI')">PI</div>
+    </div>
+    <input type="text" id="newNumInput" placeholder="เช่น SC-2024-001" maxlength="60">
+    <div class="mode-row">
+      <div class="mode-btn active" id="modeCIF" onclick="selectMode('CIF')">CIF</div>
+      <div class="mode-btn" id="modeFOB" onclick="selectMode('FOB')">FOB</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closeAddModal()">ยกเลิก</button>
+      <button class="btn btn-gold" onclick="createRecord()">สร้าง</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="confirmOverlay">
+  <div class="confirm-box">
+    <h3>🗑️ ลบรายการนี้?</h3>
+    <p id="confirmText"></p>
+    <div class="confirm-actions">
+      <button class="btn btn-gray" onclick="closeConfirm()">ยกเลิก</button>
+      <button class="btn btn-red" onclick="confirmDelete()">ลบ</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="topbar">
+  <div class="topbar-accent"></div>
+  <div class="topbar-inner">
+    <div>
+      <div class="brand-sub">International Purchasing</div>
+      <div class="brand-title">S/C & PI Workflow Tracker</div>
+    </div>
+    <div class="sep"></div>
+    <div class="sc-row">
+      <select id="scSelect" onchange="switchRecord(this.value)">
+        <option value="">— เลือก S/C หรือ PI —</option>
+      </select>
+      <button class="btn btn-gold" onclick="openAddModal()">+ เพิ่ม</button>
+      <button class="btn btn-red" id="delBtn" style="display:none" onclick="askDelete()">ลบ</button>
+      <button class="btn btn-green" onclick="syncToGoogleSheets()">📊 Sync Sheet</button>
+    </div>
+    <div class="user-tag" id="userTag">👤 —</div>
+    <span class="sync-badge sync-wait" id="syncBadge">⏳ connecting...</span>
+  </div>
+</div>
+
+<div class="prog-panel" id="progPanel" style="display:none">
+  <div class="prog-head">
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <div class="prog-title" id="progTitle"></div>
+      <div class="tags" id="progTags"></div>
+    </div>
+    <div class="prog-stats" id="progStats"></div>
+  </div>
+  <div class="bar-wrap"><div class="bar" id="progBar" style="width:0%"></div></div>
+</div>
+
+<div class="content" id="mainContent">
+  <div class="loading"><div class="spin"></div><br>กำลังเชื่อมต่อ Firebase...</div>
+</div>
+
+<div class="footer">
+  <div class="footer-txt">แผนกจัดซื้อต่างประเทศ · International Purchasing SOP</div>
+  <div class="footer-r">🔥 Firebase Real-time · 📊 Google Sheets Auto Sync</div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// ═══════════════════════════════════════════
+// ⚙️  CONFIG — แก้ตรงนี้
+// ═══════════════════════════════════════════
+var FIREBASE_CONFIG = {
+  apiKey: "AIzaSyD1dAPV08msgtFOXGUadstbZA4t-RPvbko",
+  authDomain: "rmc-pu.firebaseapp.com",
+  databaseURL: "https://rmc-pu-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "rmc-pu",
+  storageBucket: "rmc-pu.firebasestorage.app",
+  messagingSenderId: "625711853075",
+  appId: "1:625711853075:web:6e09828c8c2c2c958199e6"
+};
+
+var GS_URL = 'https://script.google.com/macros/s/AKfycbx9gww_aTWEBMJBc5148WcSIyY5FZQ5UZGqVtrgCTGBpq2e2VHF2RtOQjdXVgqKzi1Z/exec';
+// ═══════════════════════════════════════════
+
+var CIF_STEPS=[
+  {id:'1.1',phase:1,title:'ติดตาม S/C หรือ PI จาก Supplier',detail:'ติดตาม Sales Contract หรือ Proforma Invoice จาก Supplier ให้ผู้บริหารเซ็น',docs:['Sales Contract','Proforma Invoice'],coord:['จัดซื้อต่างประเทศ','ผู้บริหาร']},
+  {id:'1.2',phase:1,title:'แจ้งฝ่ายขายทำ PR และ PO ในระบบ Winspeed',detail:'แจ้งฝ่ายขายจัดทำ PR และออก PO ในระบบ Winspeed',docs:['PR','PO Winspeed'],coord:['จัดซื้อต่างประเทศ','ฝ่ายขาย']},
+  {id:'1.3',phase:1,title:'จัดทำ Draft LC ส่ง Supplier Confirm',detail:'จัดทำ Draft LC ตาม S/C ส่ง Supplier ตรวจและยืนยัน',docs:['Draft LC','S/C'],coord:['จัดซื้อต่างประเทศ','Supplier']},
+  {id:'1.4',phase:1,title:'พิมพ์ Draft LC เซ็นและส่งบัญชี',detail:'ปริ้น Draft LC → เซ็น → หัวหน้าเซ็น → ส่งบัญชี → Sign LC ในระบบธนาคาร',docs:['Draft LC','เอกสารประกอบ LC'],coord:['จัดซื้อต่างประเทศ','หัวหน้า','ฝ่ายบัญชี','ธนาคาร']},
+  {id:'1.5',phase:1,title:'รอธนาคารออก Complete LC และส่งให้ Supplier',detail:'รอธนาคารออก Complete LC / Swift LC แล้วส่งให้ Supplier',docs:['Complete LC','Swift LC'],coord:['ธนาคาร','จัดซื้อต่างประเทศ','Supplier']},
+  {id:'1.6',phase:2,title:'รอ Supplier ผลิตสินค้า',detail:'ติดตาม Production Schedule จาก Supplier เป็นระยะ',docs:['Production Schedule'],coord:['จัดซื้อต่างประเทศ','Supplier']},
+  {id:'1.7',phase:2,title:'ตรวจ Draft Shipping Docs จาก Supplier',detail:'Supplier ส่ง Draft Shipping Documents ให้ตรวจสอบก่อน แก้ไขถ้ามี',docs:['Draft B/L','Draft Invoice','Draft Packing List','Draft COO'],coord:['จัดซื้อต่างประเทศ','Supplier','Shipping Agent']},
+  {id:'1.8',phase:2,title:'รอเรือออกจากท่าต้นทาง (ETD)',detail:'รอเรือออกจากท่าเรือต้นทาง ติดตาม ETD',docs:['Shipping Advice'],coord:['จัดซื้อต่างประเทศ','Supplier','Shipping Agent']},
+  {id:'1.9',phase:2,title:'ติดตาม Original Shipping Docs',detail:'ติดตาม Original Shipping Documents จาก Supplier ส่งให้ Shipping Agent ทำ Draft ใบขน',docs:['Original B/L','Original Invoice','Original Packing List','Original COO'],coord:['จัดซื้อต่างประเทศ','Supplier','Shipping Agent']},
+  {id:'1.10',phase:3,title:'รอธนาคารส่ง Notice เอกสารมาถึง',detail:'รอธนาคารแจ้งว่าเอกสาร Shipping Documents มาถึงแล้ว',docs:['Notice จากธนาคาร'],coord:['ธนาคาร','จัดซื้อต่างประเทศ']},
+  {id:'1.11',phase:3,title:'จัดทำ TR ให้กรรมการเซ็น',detail:'จัดทำ Trust Receipt (TR) ให้กรรมการเซ็น หรือเซ็น Discrepancy ถ้ามี',docs:['TR','เอกสาร Discrepancy'],coord:['จัดซื้อต่างประเทศ','กรรมการ','ธนาคาร']},
+  {id:'1.12',phase:3,title:'ส่งอีเมลนัดธนาคารแลกเอกสาร TR',detail:'เมื่อกรรมการเซ็น TR แล้ว ส่งอีเมลนัดธนาคารเพื่อแลกเอกสาร',docs:['TR ที่เซ็นแล้ว'],coord:['จัดซื้อต่างประเทศ','ธนาคาร']},
+  {id:'1.13',phase:3,title:'ตรวจสอบ Draft ใบขนและ Confirm',detail:'ตรวจสอบ Draft ใบขนที่ Shipping Agent จัดทำ',docs:['Draft ใบขนสินค้า'],coord:['จัดซื้อต่างประเทศ','Shipping Agent']},
+  {id:'1.14',phase:4,title:'รอยืนยัน ETA Final',detail:'รอเรือยืนยันวันที่จะเทียบท่าปลายทาง',docs:['ETA Confirmation'],coord:['Shipping Agent','จัดซื้อต่างประเทศ']},
+  {id:'1.15',phase:4,title:'ให้ Shipping ยิงใบขนตัดภาษี',detail:'ให้ Shipping Agent ทำใบขนสินค้าและยิงในระบบกรมศุลกากร',docs:['ใบขนสินค้า'],coord:['Shipping Agent','จัดซื้อต่างประเทศ']},
+  {id:'1.16',phase:4,title:'แจ้งคลัง Demurrage + ส่งเอกสาร',detail:'แจ้งคลังวัน Demurrage สิ้นสุด พร้อมส่ง Packing List และ Certificate',docs:['Packing List','Certificate','Free Demurrage Period'],coord:['จัดซื้อต่างประเทศ','คลังสินค้า']},
+  {id:'1.17',phase:4,title:'ทำ Memo ชำระภาษีนำเข้า',detail:'ปริ้นใบขน+PO+Shipping Docs ทำ Memo ขอชำระภาษีนำเข้า (ก่อนวันเรียกเข้า 2 วัน)',docs:['ใบขน','PO','Shipping Docs','Memo ชำระภาษี'],coord:['จัดซื้อต่างประเทศ','ฝ่ายบัญชี']},
+  {id:'1.18',phase:4,title:'แจ้ง Shipping ตัดภาษี → ตรวจปล่อย → ลากตู้',detail:'แจ้งกำหนดการ: ตัดภาษี → ตรวจปล่อย → ลากตู้เข้าโรงงาน',docs:['ใบขนที่ผ่านพิธีการ','Release Order'],coord:['จัดซื้อต่างประเทศ','Shipping Agent','คลังสินค้า']},
+  {id:'1.19',phase:5,title:'แจ้งคลังรับสินค้า + ส่งเอกสาร',detail:'แจ้งคลังเกี่ยวกับสินค้า พร้อมส่ง PO, Packing List และ Certificate',docs:['PO','Packing List','Certificate'],coord:['จัดซื้อต่างประเทศ','คลังสินค้า']},
+  {id:'1.20',phase:5,title:'รอสินค้าเข้าโรงงาน',detail:'รอสินค้าถูกลากตู้เข้าโรงงาน',docs:[],coord:['Shipping Agent','คลังสินค้า']},
+  {id:'1.21',phase:5,title:'รับ GRN จากคลัง ส่งบัญชี',detail:'รอคลังส่งใบรับสินค้า (GRN) ตรวจสอบแล้วส่งฝ่ายบัญชี',docs:['GRN','Delivery Note'],coord:['คลังสินค้า','จัดซื้อต่างประเทศ','ฝ่ายบัญชี']},
+  {id:'1.22',phase:5,title:'ติดตามเอกสารวางบิลจาก Shipping',detail:'ติดตามเอกสารวางบิลจาก Shipping Agent (ภายใน 7 วัน)',docs:['Invoice วางบิลจาก Shipping'],coord:['Shipping Agent','จัดซื้อต่างประเทศ']},
+  {id:'1.23',phase:5,title:'จัดทำสรุปต้นทุนนำเข้า',detail:'จัดทำสรุปต้นทุนนำเข้า (ราคา+ค่าขนส่ง+ภาษี+อื่นๆ) ส่งฝ่ายบัญชี',docs:['สรุปต้นทุนนำเข้า'],coord:['จัดซื้อต่างประเทศ','ฝ่ายบัญชี']},
+  {id:'1.24',phase:5,title:'รอ Shipping วางบิล ปิดงาน',detail:'รอ Shipping วางบิล ตรวจสอบแล้วส่งฝ่ายบัญชีชำระ ปิดงาน',docs:['Invoice / Bill จาก Shipping'],coord:['Shipping Agent','จัดซื้อต่างประเทศ','ฝ่ายบัญชี']},
+];
+var FOB_EXTRA=[
+  {id:'F.1',phase:2,title:'[FOB] ประสาน Supplier เรื่อง Production Plan',detail:'ติดตามแผนการผลิตเพื่อวางแผนจองเรือ',docs:['Production Schedule'],coord:['จัดซื้อต่างประเทศ','Supplier']},
+  {id:'F.2',phase:2,title:'[FOB] จองเรือล่วงหน้า 2–3 สัปดาห์',detail:'ประสานกับ Freight Forwarder เพื่อจองเรือล่วงหน้า',docs:['Booking Confirmation','S/I'],coord:['จัดซื้อต่างประเทศ','Freight Forwarder','Supplier']},
+];
+var PHASES=[
+  {id:1,title:'เปิด LC และเอกสารเบื้องต้น',color:'#1E3573',bg:'#EEF2FF',border:'#C7D2FE'},
+  {id:2,title:'รอผลิตและตรวจ Shipping Docs',color:'#065F46',bg:'#ECFDF5',border:'#A7F3D0'},
+  {id:3,title:'กระบวนการธนาคารและ Draft ใบขน',color:'#92400E',bg:'#FFF7ED',border:'#FDE68A'},
+  {id:4,title:'พิธีการนำเข้าและจัดส่ง',color:'#7F1D1D',bg:'#FEF2F2',border:'#FECACA'},
+  {id:5,title:'รับสินค้าและปิดงาน',color:'#14532D',bg:'#F0FDF4',border:'#BBF7D0'},
+];
+function getSteps(mode){
+  if(mode==='FOB'){var s=CIF_STEPS.slice();s.splice(s.findIndex(function(x){return x.id==='1.6';}),0,FOB_EXTRA[0],FOB_EXTRA[1]);return s;}
+  return CIF_STEPS;
+}
+
+// ── STATE ──
+var userName=localStorage.getItem('ipt_user')||'', docType='SC', modalMode='CIF', currentKey=null, allRecords={}, pendingDeleteKey=null;
+
+// ── FIREBASE ──
+firebase.initializeApp(FIREBASE_CONFIG);
+var db = firebase.database();
+
+function setSyncBadge(s){
+  var b=document.getElementById('syncBadge');
+  if(s==='ok'){b.className='sync-badge sync-ok';b.textContent='🔥 Live';}
+  else if(s==='err'){b.className='sync-badge sync-err';b.textContent='✗ offline';}
+  else{b.className='sync-badge sync-wait';b.textContent='⏳ sync...';}
+}
+
+// Real-time listener
+db.ref('sc_pi_records').on('value', function(snap){
+  allRecords = snap.val() || {};
+  setSyncBadge('ok');
+  renderSelect();
+  renderMain();
+}, function(){ setSyncBadge('err'); });
+
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
+
+// ── NAME ──
+if(userName){
+  document.getElementById('nameOverlay').classList.add('hidden');
+  document.getElementById('userTag').textContent='👤 '+userName;
+}
+document.getElementById('saveNameBtn').addEventListener('click',function(){
+  var v=document.getElementById('nameInput').value.trim()||'ผู้ใช้งาน';
+  userName=v; localStorage.setItem('ipt_user',v);
+  document.getElementById('nameOverlay').classList.add('hidden');
+  document.getElementById('userTag').textContent='👤 '+v;
+});
+document.getElementById('nameInput').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('saveNameBtn').click();});
+
+// ── ADD ──
+function openAddModal(){document.getElementById('addOverlay').classList.remove('hidden');document.getElementById('newNumInput').focus();}
+function closeAddModal(){document.getElementById('addOverlay').classList.add('hidden');document.getElementById('newNumInput').value='';}
+function selectType(t){docType=t;document.getElementById('typeSC').classList.toggle('active',t==='SC');document.getElementById('typePI').classList.toggle('active',t==='PI');document.getElementById('newNumInput').placeholder=t==='SC'?'เช่น SC-2024-001':'เช่น PI-2024-001';}
+function selectMode(m){modalMode=m;document.getElementById('modeCIF').classList.toggle('active',m==='CIF');document.getElementById('modeFOB').classList.toggle('active',m==='FOB');}
+
+function createRecord(){
+  var val=document.getElementById('newNumInput').value.trim(); if(!val)return;
+  var key='rec_'+Date.now();
+  var steps=getSteps(modalMode); var ss={};
+  steps.forEach(function(s){ss[s.id]={status:'pending',note:'',updatedBy:'',updatedAt:0};});
+  db.ref('sc_pi_records/'+key).set({label:val,type:docType,mode:modalMode,created:Date.now(),steps:ss});
+  closeAddModal(); currentKey=key;
+  toast('สร้าง '+docType+' '+val+' เรียบร้อย');
+}
+document.getElementById('newNumInput').addEventListener('keydown',function(e){if(e.key==='Enter')createRecord();});
+
+// ── DELETE ──
+function askDelete(){
+  if(!currentKey)return;
+  var r=allRecords[currentKey];
+  document.getElementById('confirmText').textContent='ลบ '+r.type+' "'+r.label+'" ?\nข้อมูลจะหายถาวรสำหรับทุกคน';
+  pendingDeleteKey=currentKey;
+  document.getElementById('confirmOverlay').classList.remove('hidden');
+}
+function closeConfirm(){document.getElementById('confirmOverlay').classList.add('hidden');pendingDeleteKey=null;}
+function confirmDelete(){
+  if(!pendingDeleteKey)return;
+  var lbl=allRecords[pendingDeleteKey].type+' '+allRecords[pendingDeleteKey].label;
+  db.ref('sc_pi_records/'+pendingDeleteKey).remove();
+  if(currentKey===pendingDeleteKey)currentKey=null;
+  pendingDeleteKey=null; closeConfirm();
+  toast('ลบ '+lbl+' แล้ว');
+}
+function switchRecord(key){currentKey=key||null;document.getElementById('delBtn').style.display=key?'':'none';renderMain();}
+
+// ── RENDER ──
+function renderSelect(){
+  var sel=document.getElementById('scSelect');
+  sel.innerHTML='<option value="">— เลือก S/C หรือ PI —</option>';
+  Object.entries(allRecords).sort(function(a,b){return b[1].created-a[1].created;}).forEach(function(e){
+    var o=document.createElement('option');
+    o.value=e[0];o.textContent=e[1].type+' '+e[1].label+' ('+e[1].mode+')';
+    if(e[0]===currentKey)o.selected=true;
+    sel.appendChild(o);
+  });
+  document.getElementById('delBtn').style.display=currentKey?'':'none';
+}
+
+function renderMain(){
+  var content=document.getElementById('mainContent'),panel=document.getElementById('progPanel');
+  if(!currentKey||!allRecords[currentKey]){
+    panel.style.display='none';
+    content.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">'+(Object.keys(allRecords).length?'เลือก S/C หรือ PI ด้านบน':'กด "+ เพิ่ม" เพื่อสร้างรายการ')+'</div><div class="empty-sub">🔥 Real-time sync · ทุกคนเห็นข้อมูลเดียวกัน</div></div>';
+    return;
+  }
+  var rec=allRecords[currentKey];
+  var steps=getSteps(rec.mode),total=steps.length;
+  var done=steps.filter(function(s){return rec.steps&&rec.steps[s.id]&&rec.steps[s.id].status==='done';}).length;
+  var doing=steps.filter(function(s){return rec.steps&&rec.steps[s.id]&&rec.steps[s.id].status==='doing';}).length;
+  panel.style.display='';
+  document.getElementById('progTitle').textContent=rec.label;
+  document.getElementById('progTags').innerHTML='<span class="tag '+(rec.type==='SC'?'tag-sc':'tag-pi')+'">'+rec.type+'</span><span class="tag '+(rec.mode==='CIF'?'tag-cif':'tag-fob')+'">'+rec.mode+'</span>';
+  document.getElementById('progStats').innerHTML='<span><span class="sdot" style="background:#10b981"></span>เสร็จ '+done+'</span><span><span class="sdot" style="background:#f59e0b"></span>ดำเนินการ '+doing+'</span><span><span class="sdot" style="background:#d1d5db"></span>รอ '+(total-done-doing)+'</span>';
+  document.getElementById('progBar').style.width=(done/total*100).toFixed(1)+'%';
+  var pm={};steps.forEach(function(s){if(!pm[s.phase])pm[s.phase]=[];pm[s.phase].push(s);});
+  content.innerHTML='';
+  PHASES.forEach(function(ph){
+    var ps=pm[ph.id];if(!ps)return;
+    var pd=ps.filter(function(s){return rec.steps&&rec.steps[s.id]&&rec.steps[s.id].status==='done';}).length;
+    var bl=document.createElement('div');bl.className='phase-block';
+    var sh='<div class="phase-steps">';
+    ps.forEach(function(s){
+      var ss=(rec.steps&&rec.steps[s.id])||{status:'pending',note:'',updatedBy:'',updatedAt:0};
+      var st=ss.status||'pending';
+      var ic=st==='done'?'✓':st==='doing'?'●':'';
+      var bg=st==='done'?'เสร็จแล้ว':st==='doing'?'กำลังดำเนินการ':'รอดำเนินการ';
+      var who=ss.updatedBy?'🔄 '+ss.updatedBy+(ss.updatedAt?' · '+new Date(ss.updatedAt).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}):''):'';
+      var sid=s.id.replace(/\./g,'_');
+      var dH=s.docs.length?'<div class="det-lbl">เอกสาร</div><div class="chips">'+s.docs.map(function(d){return'<span class="chip-d">📄 '+d+'</span>';}).join('')+'</div>':'';
+      var cH=s.coord.length?'<div class="det-lbl" style="margin-top:6px">ผู้เกี่ยวข้อง</div><div class="chips">'+s.coord.map(function(c){return'<span class="chip-c">👥 '+c+'</span>';}).join('')+'</div>':'';
+      sh+='<div class="step-row st-'+st+'" id="sr_'+sid+'"><div class="step-main" onclick="toggleExpand(\''+s.id+'\')"><div class="s-btn" onclick="event.stopPropagation();cycleStatus(\''+s.id+'\')">'+ic+'</div><div class="s-info"><div class="s-num">ขั้นตอน '+s.id+'</div><div class="s-title">'+s.title+'</div><div class="s-badge">'+bg+'</div>'+(who?'<div class="s-who">'+who+'</div>':'')+' </div><div class="s-chev">▾</div></div><div class="step-detail"><div class="s-desc">'+s.detail+'</div>'+dH+cH+'<div class="det-lbl" style="margin-top:6px">บันทึก</div><textarea class="note-area" placeholder="เพิ่มหมายเหตุ..." onclick="event.stopPropagation()" onchange="saveNote(\''+s.id+'\',this.value)">'+(ss.note||'')+'</textarea></div></div>';
+    });
+    sh+='</div>';
+    bl.innerHTML='<div class="phase-hdr" style="background:'+ph.bg+';border-bottom:1px solid '+ph.border+'" onclick="togglePhase(this)"><div class="ph-num" style="background:'+ph.color+'">'+ph.id+'</div><div class="ph-title" style="color:'+ph.color+'">'+ph.title+'</div><div class="ph-prog" style="color:'+ph.color+'">'+pd+'/'+ps.length+'</div><div class="ph-chev" style="color:'+ph.color+'">▾</div></div>'+sh;
+    content.appendChild(bl);
+  });
+}
+
+function togglePhase(h){h.closest('.phase-block').classList.toggle('collapsed');}
+function toggleExpand(sid){var r=document.getElementById('sr_'+sid.replace(/\./g,'_'));if(r)r.classList.toggle('expanded');}
+
+function cycleStatus(sid){
+  if(!currentKey)return;
+  var order=['pending','doing','done'];
+  var ss=(allRecords[currentKey]&&allRecords[currentKey].steps&&allRecords[currentKey].steps[sid])||{status:'pending',note:''};
+  var next=order[(order.indexOf(ss.status||'pending')+1)%3];
+  var upd={};
+  upd['steps/'+sid+'/status']=next;
+  upd['steps/'+sid+'/updatedBy']=userName;
+  upd['steps/'+sid+'/updatedAt']=Date.now();
+  upd['steps/'+sid+'/note']=ss.note||'';
+  db.ref('sc_pi_records/'+currentKey).update(upd);
+  // auto sync to Google Sheets
+  setTimeout(syncToGoogleSheets, 1000);
+}
+
+function saveNote(sid,val){
+  if(!currentKey)return;
+  var upd={};
+  upd['steps/'+sid+'/note']=val;
+  upd['steps/'+sid+'/updatedBy']=userName;
+  upd['steps/'+sid+'/updatedAt']=Date.now();
+  db.ref('sc_pi_records/'+currentKey).update(upd);
+  setTimeout(syncToGoogleSheets, 1000);
+}
+
+// ── GOOGLE SHEETS SYNC ──
+function buildSheetsPayload(){
+  var payload={sheets:[]};
+  var sumRows=[['เลขที่','ประเภท','Mode','สร้างวันที่','เสร็จ','กำลังทำ','รอ','% เสร็จ']];
+  Object.values(allRecords).sort(function(a,b){return b.created-a.created;}).forEach(function(rec){
+    var steps=getSteps(rec.mode),total=steps.length;
+    var done=steps.filter(function(s){return rec.steps&&rec.steps[s.id]&&rec.steps[s.id].status==='done';}).length;
+    var doing=steps.filter(function(s){return rec.steps&&rec.steps[s.id]&&rec.steps[s.id].status==='doing';}).length;
+    sumRows.push([rec.label,rec.type,rec.mode,new Date(rec.created).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}),done,doing,total-done-doing,Math.round(done/total*100)+'%']);
+  });
+  payload.sheets.push({name:'สรุปภาพรวม',rows:sumRows});
+  PHASES.forEach(function(ph){
+    var phaseSteps=CIF_STEPS.filter(function(s){return s.phase===ph.id;});
+    FOB_EXTRA.forEach(function(f){if(f.phase===ph.id)phaseSteps.push(f);});
+    var header=['เลขที่','ประเภท','Mode','% เสร็จ'];
+    phaseSteps.forEach(function(s){header.push(s.id+' สถานะ',s.id+' วันที่',s.id+' ผู้ทำ',s.id+' หมายเหตุ');});
+    var rows=[header];
+    Object.values(allRecords).sort(function(a,b){return b.created-a.created;}).forEach(function(rec){
+      var steps=getSteps(rec.mode),total=steps.length;
+      var done=steps.filter(function(s){return rec.steps&&rec.steps[s.id]&&rec.steps[s.id].status==='done';}).length;
+      var row=[rec.label,rec.type,rec.mode,Math.round(done/total*100)+'%'];
+      phaseSteps.forEach(function(s){
+        var ss=(rec.steps&&rec.steps[s.id])||{status:'pending',note:'',updatedBy:'',updatedAt:0};
+        var st=ss.status==='done'?'เสร็จ':ss.status==='doing'?'กำลังทำ':'รอ';
+        var dt=ss.updatedAt?new Date(ss.updatedAt).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}):'';
+        row.push(st,dt,ss.updatedBy||'',ss.note||'');
+      });
+      rows.push(row);
+    });
+    payload.sheets.push({name:'Phase '+ph.id+' '+ph.title.substring(0,15),rows:rows});
+  });
+  return payload;
+}
+
+function syncToGoogleSheets(){
+  if(Object.keys(allRecords).length===0){toast('ไม่มีข้อมูล');return;}
+  var payload=buildSheetsPayload();
+  fetch(GS_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .then(function(){toast('📊 Sync Google Sheets เรียบร้อย ✓');})
+    .catch(function(){toast('⚠️ Sync ไม่สำเร็จ ลองใหม่');});
+}
+
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeAddModal();closeConfirm();}});
+</script>
+</body>
+</html>
