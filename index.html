@@ -413,45 +413,8 @@ function saveNote(sid,val){
 }
 
 // ── GOOGLE SHEETS SYNC ──
-function buildSheetsPayload(){
-  var payload={sheets:[]};
-  var sumRows=[['เลขที่','ประเภท','Mode','สร้างวันที่','เสร็จ','กำลังทำ','รอ','% เสร็จ']];
-  Object.values(allRecords).sort(function(a,b){return b.created-a.created;}).forEach(function(rec){
-    var steps=getSteps(rec.mode),total=steps.length;
-    var done=steps.filter(function(s){return rec.steps&&rec.steps[s.id]&&rec.steps[s.id].status==='done';}).length;
-    var doing=steps.filter(function(s){return rec.steps&&rec.steps[s.id]&&rec.steps[s.id].status==='doing';}).length;
-    sumRows.push([rec.label,rec.type,rec.mode,new Date(rec.created).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}),done,doing,total-done-doing,Math.round(done/total*100)+'%']);
-  });
-  payload.sheets.push({name:'สรุปภาพรวม',rows:sumRows});
-  PHASES.forEach(function(ph){
-    var phaseSteps=CIF_STEPS.filter(function(s){return s.phase===ph.id;});
-    FOB_EXTRA.forEach(function(f){if(f.phase===ph.id)phaseSteps.push(f);});
-    var header=['เลขที่','ประเภท','Mode','% เสร็จ'];
-    phaseSteps.forEach(function(s){header.push(s.id+' สถานะ',s.id+' วันที่',s.id+' ผู้ทำ',s.id+' หมายเหตุ');});
-    var rows=[header];
-    Object.values(allRecords).sort(function(a,b){return b.created-a.created;}).forEach(function(rec){
-      var steps=getSteps(rec.mode),total=steps.length;
-      var done=steps.filter(function(s){return rec.steps&&rec.steps[s.id]&&rec.steps[s.id].status==='done';}).length;
-      var row=[rec.label,rec.type,rec.mode,Math.round(done/total*100)+'%'];
-      phaseSteps.forEach(function(s){
-        var ss=(rec.steps&&rec.steps[s.id])||{status:'pending',note:'',updatedBy:'',updatedAt:0};
-        var st=ss.status==='done'?'เสร็จ':ss.status==='doing'?'กำลังทำ':'รอ';
-        var dt=ss.updatedAt?new Date(ss.updatedAt).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}):'';
-        row.push(st,dt,ss.updatedBy||'',ss.note||'');
-      });
-      rows.push(row);
-    });
-    payload.sheets.push({name:'Phase '+ph.id+' '+ph.title.substring(0,15),rows:rows});
-  });
-  return payload;
-}
-
 function syncToGoogleSheets(){
-  if(Object.keys(allRecords).length===0){toast('ไม่มีข้อมูล');return;}
-  var payload=buildSheetsPayload();
-  fetch(GS_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
-    .then(function(){toast('📊 Sync Google Sheets เรียบร้อย ✓');})
-    .catch(function(){toast('⚠️ Sync ไม่สำเร็จ ลองใหม่');});
+  toast('ไม่ได้เปิดใช้ Google Sheets');
 }
 
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeAddModal();closeConfirm();}});
