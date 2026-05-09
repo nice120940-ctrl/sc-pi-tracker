@@ -203,53 +203,118 @@ var FIREBASE_CONFIG = {
 };
 
 var CIF_STEPS=[
-  {id:'1.1',phase:1,title:'ติดตาม S/C หรือ PI จาก Supplier',detail:'ติดตาม Sales Contract หรือ Proforma Invoice จาก Supplier ให้ผู้บริหารเซ็น',docs:['Sales Contract','Proforma Invoice'],coord:['จัดซื้อต่างประเทศ','ผู้บริหาร']},
-  {id:'1.2',phase:1,title:'แจ้งฝ่ายขายทำ PR และ PO ในระบบ Winspeed',detail:'แจ้งฝ่ายขายจัดทำ PR และออก PO ในระบบ Winspeed',docs:['PR','PO Winspeed'],coord:['จัดซื้อต่างประเทศ','ฝ่ายขาย']},
-  {id:'1.3',phase:1,title:'จัดทำ Draft LC ส่ง Supplier Confirm',detail:'จัดทำ Draft LC ตาม S/C ส่ง Supplier ตรวจและยืนยัน',docs:['Draft LC','S/C'],coord:['จัดซื้อต่างประเทศ','Supplier']},
-  {id:'1.4',phase:1,title:'พิมพ์ Draft LC เซ็นและส่งบัญชี',detail:'ปริ้น Draft LC → เซ็น → หัวหน้าเซ็น → ส่งบัญชี → Sign LC ในระบบธนาคาร',docs:['Draft LC','เอกสารประกอบ LC'],coord:['จัดซื้อต่างประเทศ','หัวหน้า','ฝ่ายบัญชี','ธนาคาร']},
-  {id:'1.5',phase:1,title:'รอธนาคารออก Complete LC และส่งให้ Supplier',detail:'รอธนาคารออก Complete LC / Swift LC แล้วส่งให้ Supplier',docs:['Complete LC','Swift LC'],coord:['ธนาคาร','จัดซื้อต่างประเทศ','Supplier']},
-  {id:'1.6',phase:2,title:'รอ Supplier ผลิตสินค้า',detail:'ติดตาม Production Schedule จาก Supplier เป็นระยะ',docs:['Production Schedule'],coord:['จัดซื้อต่างประเทศ','Supplier']},
-  {id:'1.7',phase:2,title:'ตรวจ Draft Shipping Docs จาก Supplier',detail:'Supplier ส่ง Draft Shipping Documents ให้ตรวจสอบก่อน แก้ไขถ้ามี',docs:['Draft B/L','Draft Invoice','Draft Packing List','Draft COO'],coord:['จัดซื้อต่างประเทศ','Supplier','Shipping Agent']},
-  {id:'1.8',phase:2,title:'รอเรือออกจากท่าต้นทาง (ETD)',detail:'รอเรือออกจากท่าเรือต้นทาง ติดตาม ETD',docs:['Shipping Advice'],coord:['จัดซื้อต่างประเทศ','Supplier','Shipping Agent']},
-  {id:'1.9',phase:2,title:'ติดตาม Original Shipping Docs',detail:'ติดตาม Original Shipping Documents จาก Supplier ส่งให้ Shipping Agent ทำ Draft ใบขน',docs:['Original B/L','Original Invoice','Original Packing List','Original COO'],coord:['จัดซื้อต่างประเทศ','Supplier','Shipping Agent']},
-  {id:'1.10',phase:3,title:'รอธนาคารส่ง Notice เอกสารมาถึง',detail:'รอธนาคารแจ้งว่าเอกสาร Shipping Documents มาถึงแล้ว',docs:['Notice จากธนาคาร'],coord:['ธนาคาร','จัดซื้อต่างประเทศ']},
-  {id:'1.11',phase:3,title:'จัดทำ TR ให้กรรมการเซ็น',detail:'จัดทำ Trust Receipt (TR) ให้กรรมการเซ็น หรือเซ็น Discrepancy ถ้ามี',docs:['TR','เอกสาร Discrepancy'],coord:['จัดซื้อต่างประเทศ','กรรมการ','ธนาคาร']},
-  {id:'1.12',phase:3,title:'ส่งอีเมลนัดธนาคารแลกเอกสาร TR',detail:'เมื่อกรรมการเซ็น TR แล้ว ส่งอีเมลนัดธนาคารเพื่อแลกเอกสาร',docs:['TR ที่เซ็นแล้ว'],coord:['จัดซื้อต่างประเทศ','ธนาคาร']},
-  {id:'1.13',phase:3,title:'ตรวจสอบ Draft ใบขนและ Confirm',detail:'ตรวจสอบ Draft ใบขนที่ Shipping Agent จัดทำ',docs:['Draft ใบขนสินค้า'],coord:['จัดซื้อต่างประเทศ','Shipping Agent']},
-  {id:'1.14',phase:4,title:'รอยืนยัน ETA Final',detail:'รอเรือยืนยันวันที่จะเทียบท่าปลายทาง',docs:['ETA Confirmation'],coord:['Shipping Agent','จัดซื้อต่างประเทศ']},
-  {id:'1.15',phase:4,title:'ให้ Shipping ยิงใบขนตัดภาษี',detail:'ให้ Shipping Agent ทำใบขนสินค้าและยิงในระบบกรมศุลกากร',docs:['ใบขนสินค้า'],coord:['Shipping Agent','จัดซื้อต่างประเทศ']},
-  {id:'1.16',phase:4,title:'แจ้งคลัง Demurrage + ส่งเอกสาร',detail:'แจ้งคลังวัน Demurrage สิ้นสุด พร้อมส่ง Packing List และ Certificate',docs:['Packing List','Certificate','Free Demurrage Period'],coord:['จัดซื้อต่างประเทศ','คลังสินค้า']},
-  {id:'1.17',phase:4,title:'ทำ Memo ชำระภาษีนำเข้า',detail:'ปริ้นใบขน+PO+Shipping Docs ทำ Memo ขอชำระภาษีนำเข้า (ก่อนวันเรียกเข้า 2 วัน)',docs:['ใบขน','PO','Shipping Docs','Memo ชำระภาษี'],coord:['จัดซื้อต่างประเทศ','ฝ่ายบัญชี']},
-  {id:'1.18',phase:4,title:'แจ้ง Shipping ตัดภาษี → ตรวจปล่อย → ลากตู้',detail:'แจ้งกำหนดการ: ตัดภาษี → ตรวจปล่อย → ลากตู้เข้าโรงงาน',docs:['ใบขนที่ผ่านพิธีการ','Release Order'],coord:['จัดซื้อต่างประเทศ','Shipping Agent','คลังสินค้า']},
-  {id:'1.19',phase:5,title:'แจ้งคลังรับสินค้า + ส่งเอกสาร',detail:'แจ้งคลังเกี่ยวกับสินค้า พร้อมส่ง PO, Packing List และ Certificate',docs:['PO','Packing List','Certificate'],coord:['จัดซื้อต่างประเทศ','คลังสินค้า']},
-  {id:'1.20',phase:5,title:'รอสินค้าเข้าโรงงาน',detail:'รอสินค้าถูกลากตู้เข้าโรงงาน',docs:[],coord:['Shipping Agent','คลังสินค้า']},
-  {id:'1.21',phase:5,title:'รับ GRN จากคลัง ส่งบัญชี',detail:'รอคลังส่งใบรับสินค้า (GRN) ตรวจสอบแล้วส่งฝ่ายบัญชี',docs:['GRN','Delivery Note'],coord:['คลังสินค้า','จัดซื้อต่างประเทศ','ฝ่ายบัญชี']},
-  {id:'1.22',phase:5,title:'ติดตามเอกสารวางบิลจาก Shipping',detail:'ติดตามเอกสารวางบิลจาก Shipping Agent (ภายใน 7 วัน)',docs:['Invoice วางบิลจาก Shipping'],coord:['Shipping Agent','จัดซื้อต่างประเทศ']},
-  {id:'1.23',phase:5,title:'จัดทำสรุปต้นทุนนำเข้า',detail:'จัดทำสรุปต้นทุนนำเข้า (ราคา+ค่าขนส่ง+ภาษี+อื่นๆ) ส่งฝ่ายบัญชี',docs:['สรุปต้นทุนนำเข้า'],coord:['จัดซื้อต่างประเทศ','ฝ่ายบัญชี']},
-  {id:'1.24',phase:5,title:'รอ Shipping วางบิล ปิดงาน',detail:'รอ Shipping วางบิล ตรวจสอบแล้วส่งฝ่ายบัญชีชำระ ปิดงาน',docs:['Invoice / Bill จาก Shipping'],coord:['Shipping Agent','จัดซื้อต่างประเทศ','ฝ่ายบัญชี']},
-];
-var FOB_EXTRA=[
-  {id:'F.1',phase:2,title:'[FOB] ประสาน Supplier เรื่อง Production Plan',detail:'ติดตามแผนการผลิตเพื่อวางแผนจองเรือ',docs:['Production Schedule'],coord:['จัดซื้อต่างประเทศ','Supplier']},
-  {id:'F.2',phase:2,title:'[FOB] จองเรือล่วงหน้า 2–3 สัปดาห์',detail:'ประสานกับ Freight Forwarder เพื่อจองเรือล่วงหน้า',docs:['Booking Confirmation','S/I'],coord:['จัดซื้อต่างประเทศ','Freight Forwarder','Supplier']},
-];
-var PHASES=[
-  {id:1,title:'เปิด LC และเอกสารเบื้องต้น',color:'#1E3573',bg:'#EEF2FF',border:'#C7D2FE'},
-  {id:2,title:'รอผลิตและตรวจ Shipping Docs',color:'#065F46',bg:'#ECFDF5',border:'#A7F3D0'},
-  {id:3,title:'กระบวนการธนาคารและ Draft ใบขน',color:'#92400E',bg:'#FFF7ED',border:'#FDE68A'},
-  {id:4,title:'พิธีการนำเข้าและจัดส่ง',color:'#7F1D1D',bg:'#FEF2F2',border:'#FECACA'},
-  {id:5,title:'รับสินค้าและปิดงาน',color:'#14532D',bg:'#F0FDF4',border:'#BBF7D0'},
+  // ── Phase 1 ──────────────────────────────────────────────────
+  {id:'1.1', phase:1,title:'ติดตาม S/C หรือ PI จาก Supplier',
+   detail:'ติดตาม Sales Contract หรือ Proforma Invoice จาก Supplier ให้ผู้บริหารเซ็น',
+   docs:['Sales Contract','Proforma Invoice'],coord:['จัดซื้อต่างประเทศ','ผู้บริหาร']},
+  {id:'1.2', phase:1,title:'แจ้งฝ่ายขายทำ PR และ PO ในระบบ Winspeed',
+   detail:'แจ้งฝ่ายขายจัดทำ PR และออก PO ในระบบ Winspeed',
+   docs:['PR','PO Winspeed'],coord:['จัดซื้อต่างประเทศ','ฝ่ายขาย']},
+  {id:'1.3', phase:1,title:'จัดทำ Draft LC ส่ง Supplier Confirm',
+   detail:'จัดทำ Draft LC ตาม S/C ส่ง Supplier ตรวจและยืนยัน',
+   docs:['Draft LC','S/C'],coord:['จัดซื้อต่างประเทศ','Supplier']},
+  {id:'1.4', phase:1,title:'พิมพ์ Draft LC เซ็นและส่งบัญชี',
+   detail:'ปริ้น Draft LC → เซ็น → หัวหน้าเซ็น → ส่งบัญชี → Sign LC ในระบบธนาคาร',
+   docs:['Draft LC','เอกสารประกอบ LC'],coord:['จัดซื้อต่างประเทศ','หัวหน้า','ฝ่ายบัญชี','ธนาคาร']},
+  {id:'1.5', phase:1,title:'รอธนาคารออก Complete LC และส่งให้ Supplier',
+   detail:'รอธนาคารออก Complete LC / Swift LC แล้วส่งให้ Supplier',
+   docs:['Complete LC','Swift LC'],coord:['ธนาคาร','จัดซื้อต่างประเทศ','Supplier']},
+  // ── Phase 2 ──────────────────────────────────────────────────
+  {id:'1.6', phase:2,title:'รอ Supplier ผลิตสินค้า',
+   detail:'ติดตาม Production Schedule จาก Supplier เป็นระยะ',
+   docs:['Production Schedule'],coord:['จัดซื้อต่างประเทศ','Supplier']},
+  {id:'1.7', phase:2,title:'ตรวจ Draft Shipping Docs จาก Supplier',
+   detail:'Supplier ส่ง Draft Shipping Documents ให้ตรวจสอบก่อน แก้ไขถ้ามี',
+   docs:['Draft B/L','Draft Invoice','Draft Packing List','Draft COO'],coord:['จัดซื้อต่างประเทศ','Supplier','Shipping Agent']},
+  {id:'1.8', phase:2,title:'รอเรือออกจากท่าต้นทาง (ETD)',
+   detail:'รอเรือออกจากท่าเรือต้นทาง ติดตาม ETD',
+   docs:['Shipping Advice'],coord:['จัดซื้อต่างประเทศ','Supplier','Shipping Agent']},
+  {id:'1.9', phase:2,title:'ติดตาม Original Shipping Docs',
+   detail:'ติดตาม Original Shipping Documents จาก Supplier ส่งให้ Shipping Agent ทำ Draft ใบขน',
+   docs:['Original B/L','Original Invoice','Original Packing List','Original COO'],coord:['จัดซื้อต่างประเทศ','Supplier','Shipping Agent']},
+  // ── Phase 3 ──────────────────────────────────────────────────
+  {id:'1.10',phase:3,title:'รอธนาคารส่ง Notice เอกสารมาถึง',
+   detail:'รอธนาคารแจ้งว่าเอกสาร Shipping Documents มาถึงแล้ว',
+   docs:['Notice จากธนาคาร'],coord:['ธนาคาร','จัดซื้อต่างประเทศ']},
+  {id:'1.11',phase:3,title:'จัดทำ TR ให้กรรมการเซ็น',
+   detail:'จัดทำ Trust Receipt (TR) ให้กรรมการเซ็น หรือเซ็น Discrepancy ถ้ามี',
+   docs:['TR','เอกสาร Discrepancy'],coord:['จัดซื้อต่างประเทศ','กรรมการ','ธนาคาร']},
+  {id:'1.12',phase:3,title:'ส่งอีเมลนัดธนาคารแลกเอกสาร TR',
+   detail:'เมื่อกรรมการเซ็น TR แล้ว ส่งอีเมลนัดธนาคารเพื่อแลกเอกสาร',
+   docs:['TR ที่เซ็นแล้ว'],coord:['จัดซื้อต่างประเทศ','ธนาคาร']},
+  {id:'1.13',phase:3,title:'แจ้ง Shipping รับ Original Docs ทาง Line / อีเมล',
+   detail:'หลังแลก TR กับธนาคารแล้ว ส่งข้อความทาง Line หรืออีเมลถึง Shipping Agent เพื่อนัดหมายมารับ Original Documents ได้แก่ Original B/L, Original Invoice, Original Packing List, Form E หรือเอกสาร COO อื่นๆ ที่เกี่ยวข้อง',
+   docs:['Original B/L','Original Invoice','Original Packing List','Form E','เอกสาร COO / Form อื่นๆ'],coord:['จัดซื้อต่างประเทศ','Shipping Agent']},
+  {id:'1.14',phase:3,title:'ตรวจสอบ Draft ใบขนและ Confirm',
+   detail:'ตรวจสอบ Draft ใบขนที่ Shipping Agent จัดทำ',
+   docs:['Draft ใบขนสินค้า'],coord:['จัดซื้อต่างประเทศ','Shipping Agent']},
+  // ── Phase 4 ──────────────────────────────────────────────────
+  {id:'1.15',phase:4,title:'รอยืนยัน ETA Final',
+   detail:'รอเรือยืนยันวันที่จะเทียบท่าปลายทาง',
+   docs:['ETA Confirmation'],coord:['Shipping Agent','จัดซื้อต่างประเทศ']},
+  {id:'1.16',phase:4,title:'ให้ Shipping ยิงใบขนตัดภาษี',
+   detail:'ให้ Shipping Agent ทำใบขนสินค้าและยิงในระบบกรมศุลกากร',
+   docs:['ใบขนสินค้า'],coord:['Shipping Agent','จัดซื้อต่างประเทศ']},
+  {id:'1.17',phase:4,title:'แจ้งคลัง Demurrage + ส่งเอกสาร',
+   detail:'แจ้งคลังวัน Demurrage สิ้นสุด พร้อมส่ง Packing List และ Certificate',
+   docs:['Packing List','Certificate','Free Demurrage Period'],coord:['จัดซื้อต่างประเทศ','คลังสินค้า']},
+  {id:'1.18',phase:4,title:'ทำ Memo ชำระภาษีนำเข้า',
+   detail:'ปริ้นใบขน+PO+Shipping Docs ทำ Memo ขอชำระภาษีนำเข้า (ก่อนวันเรียกเข้า 2 วัน)',
+   docs:['ใบขน','PO','Shipping Docs','Memo ชำระภาษี'],coord:['จัดซื้อต่างประเทศ','ฝ่ายบัญชี']},
+  {id:'1.19',phase:4,title:'แจ้ง Shipping ตัดภาษี → ตรวจปล่อย → ลากตู้',
+   detail:'แจ้งกำหนดการ: ตัดภาษี → ตรวจปล่อย → ลากตู้เข้าโรงงาน',
+   docs:['ใบขนที่ผ่านพิธีการ','Release Order'],coord:['จัดซื้อต่างประเทศ','Shipping Agent','คลังสินค้า']},
+  // ── Phase 5 ──────────────────────────────────────────────────
+  {id:'1.20',phase:5,title:'แจ้งคลังรับสินค้า + ส่งเอกสาร',
+   detail:'แจ้งคลังเกี่ยวกับสินค้า พร้อมส่ง PO, Packing List และ Certificate',
+   docs:['PO','Packing List','Certificate'],coord:['จัดซื้อต่างประเทศ','คลังสินค้า']},
+  {id:'1.21',phase:5,title:'รอสินค้าเข้าโรงงาน',
+   detail:'รอสินค้าถูกลากตู้เข้าโรงงาน',
+   docs:[],coord:['Shipping Agent','คลังสินค้า']},
+  {id:'1.22',phase:5,title:'รับ GRN จากคลัง ส่งบัญชี',
+   detail:'รอคลังส่งใบรับสินค้า (GRN) ตรวจสอบแล้วส่งฝ่ายบัญชี',
+   docs:['GRN','Delivery Note'],coord:['คลังสินค้า','จัดซื้อต่างประเทศ','ฝ่ายบัญชี']},
+  {id:'1.23',phase:5,title:'ติดตามเอกสารวางบิลจาก Shipping',
+   detail:'ติดตามเอกสารวางบิลจาก Shipping Agent (ภายใน 7 วัน)',
+   docs:['Invoice วางบิลจาก Shipping'],coord:['Shipping Agent','จัดซื้อต่างประเทศ']},
+  {id:'1.24',phase:5,title:'จัดทำสรุปต้นทุนนำเข้า',
+   detail:'จัดทำสรุปต้นทุนนำเข้า (ราคา+ค่าขนส่ง+ภาษี+อื่นๆ) ส่งฝ่ายบัญชี',
+   docs:['สรุปต้นทุนนำเข้า'],coord:['จัดซื้อต่างประเทศ','ฝ่ายบัญชี']},
+  {id:'1.25',phase:5,title:'รอ Shipping วางบิล ปิดงาน',
+   detail:'รอ Shipping วางบิล ตรวจสอบแล้วส่งฝ่ายบัญชีชำระ ปิดงาน',
+   docs:['Invoice / Bill จาก Shipping'],coord:['Shipping Agent','จัดซื้อต่างประเทศ','ฝ่ายบัญชี']},
 ];
 
-// Firebase ไม่รับ . ใน key → แปลงเป็น -
+var FOB_EXTRA=[
+  {id:'F.1',phase:2,title:'[FOB] ประสาน Supplier เรื่อง Production Plan',
+   detail:'ติดตามแผนการผลิตเพื่อวางแผนจองเรือ',
+   docs:['Production Schedule'],coord:['จัดซื้อต่างประเทศ','Supplier']},
+  {id:'F.2',phase:2,title:'[FOB] จองเรือล่วงหน้า 2–3 สัปดาห์',
+   detail:'ประสานกับ Freight Forwarder เพื่อจองเรือล่วงหน้า',
+   docs:['Booking Confirmation','S/I'],coord:['จัดซื้อต่างประเทศ','Freight Forwarder','Supplier']},
+];
+
+var PHASES=[
+  {id:1,title:'เปิด LC และเอกสารเบื้องต้น',    color:'#1E3573',bg:'#EEF2FF',border:'#C7D2FE'},
+  {id:2,title:'รอผลิตและตรวจ Shipping Docs',    color:'#065F46',bg:'#ECFDF5',border:'#A7F3D0'},
+  {id:3,title:'กระบวนการธนาคารและ Draft ใบขน',  color:'#92400E',bg:'#FFF7ED',border:'#FDE68A'},
+  {id:4,title:'พิธีการนำเข้าและจัดส่ง',          color:'#7F1D1D',bg:'#FEF2F2',border:'#FECACA'},
+  {id:5,title:'รับสินค้าและปิดงาน',              color:'#14532D',bg:'#F0FDF4',border:'#BBF7D0'},
+];
+
 function encKey(id){return id.replace(/\./g,'-');}
 function decKey(k){return k.replace(/-/g,'.');}
 
 function getSteps(mode){
-  if(mode==='FOB'){var s=CIF_STEPS.slice();s.splice(s.findIndex(function(x){return x.id==='1.6';}),0,FOB_EXTRA[0],FOB_EXTRA[1]);return s;}
+  if(mode==='FOB'){
+    var s=CIF_STEPS.slice();
+    s.splice(s.findIndex(function(x){return x.id==='1.6';}),0,FOB_EXTRA[0],FOB_EXTRA[1]);
+    return s;
+  }
   return CIF_STEPS;
 }
 
-var userName=localStorage.getItem('ipt_user')||'', docType='SC', modalMode='CIF', currentKey=null, allRecords={}, pendingDeleteKey=null;
+var userName=localStorage.getItem('ipt_user')||'',docType='SC',modalMode='CIF',currentKey=null,allRecords={},pendingDeleteKey=null;
 
 firebase.initializeApp(FIREBASE_CONFIG);
 var db=firebase.database();
@@ -291,7 +356,6 @@ function createRecord(){
   var val=document.getElementById('newNumInput').value.trim();if(!val)return;
   var key='rec_'+Date.now();
   var steps=getSteps(modalMode);var ss={};
-  // ใช้ encKey เพื่อแปลง . → - ก่อน save ใน Firebase
   steps.forEach(function(s){ss[encKey(s.id)]={status:'pending',note:'',updatedBy:'',updatedAt:0};});
   db.ref('sc_pi_records/'+key).set({label:val,type:docType,mode:modalMode,created:Date.now(),steps:ss});
   closeAddModal();currentKey=key;
